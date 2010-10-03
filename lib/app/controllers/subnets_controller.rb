@@ -1,24 +1,41 @@
 class SubnetsController < ApplicationController
-  layout 'standard'
+  def index
+    @search = Subnet.search params[:search]
+    @subnets = @search.paginate(:page => params[:page])
+  end
 
-  active_scaffold :subnet do |config|
-    config.columns = [:domain, :name, :number, :mask, :ranges, :dhcp, :vlanid]
-    config.create.columns = [:domain, :name, :number, :mask, :ranges, :dhcp, :priority, :vlanid]
-    config.columns[:domain].label = "Site"
-    config.columns[:vlanid].label = "VLAN id"
-    columns[:dhcp].label = "DHCP Server"
-    columns[:ranges].label = "Address ranges"
-    config.columns[:ranges].description = "A list of comma separated single IPs or start-end couples."
-    columns[:mask].label = "Netmask"
-    config.columns[:domain].form_ui  = :select
-    config.columns[:dhcp].form_ui    = :select
-    list.columns.exclude :created_at, :updated_at
-    list.sorting = {:domain => 'DESC' }
-    columns['domain'].sort_by :sql
+  def new
+    @subnet = Subnet.new
+  end
 
-    # Deletes require a page update so as to show error messsages
-    config.delete.link.inline = false
+  def create
+    @subnet = Subnet.new(params[:subnet])
+    if @subnet.save
+      flash[:foreman_notice] = "Successfully created subnet."
+      redirect_to subnets_url
+    else
+      render :action => 'new'
+    end
+  end
 
-    config.nested.add_link "Hosts", [:hosts]
+  def edit
+    @subnet = Subnet.find(params[:id])
+  end
+
+  def update
+    @subnet = Subnet.find(params[:id])
+    if @subnet.update_attributes(params[:subnet])
+      flash[:foreman_notice] = "Successfully updated subnet."
+      redirect_to subnets_url
+    else
+      render :action => 'edit'
+    end
+  end
+
+  def destroy
+    @subnet = Subnet.find(params[:id])
+    @subnet.destroy
+    flash[:foreman_notice] = "Successfully destroyed subnet."
+    redirect_to subnets_url
   end
 end

@@ -7,15 +7,15 @@ module NetdbManager
       require 'ipaddr'
       include DHCP
     else
-      if SETTINGS[:unattended].nil? or SETTINGS[:unattended]
-        RAILS_DEFAULT_LOGGER.warn "*********************************************************************"
-        RAILS_DEFAULT_LOGGER.warn "DHCP and DNS management require that you install the memcache service"
-        RAILS_DEFAULT_LOGGER.warn "and that you add this line to environment.db"
-        RAILS_DEFAULT_LOGGER.warn "config.cache_store = :mem_cache_store"
-        RAILS_DEFAULT_LOGGER.warn "*********************************************************************"
-      end
-      @dhcp = nil
-      return
+      message = "*********************************************************************\n" +
+                "DHCP and DNS management require that you install the memcache service\n" +
+                "and that you add this line to environment.db                         \n" +
+                "config.cache_store = :mem_cache_store                                \n" +
+                "and edit config.initializers/session_store to set = :mem_cache_store \n" +
+                "*********************************************************************\n"
+      RAILS_DEFAULT_LOGGER.warn message
+      puts message
+      exit
     end
 
     base.extend  ClassMethods

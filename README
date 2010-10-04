@@ -36,6 +36,14 @@ config.cache_store = :mem_cache_store
 to the initializer block in config/environment.rb and then editing config/initializers/session_store.rb
 and setting the store type to :mem_cache_store
 
+At this point you need to create the subnets that your hosts will be installed on. So jump to the subnets page
+and create the reuqired entries.
+
+Your hosts now require a subnet and you must run
+rake subnets:assign
+
+repeatedly until all your hosts have been assigned a subnet
+
 Example
 =======
 

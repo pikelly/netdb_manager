@@ -1,8 +1,40 @@
 NetdbManager
 ============
 
-Introduction goes here.
+This plugin adds DNS and DHCP management to the foreman application whne running as a rails 2.3.5 application
 
+Installation
+============
+
+The plugin is provied as a rails engine and therefore requires that the rails engines plugin is installed first.
+
+cd RAILS_ROOT/vendor/plugins
+git clone http://github.com/lazyatom/engines.git engines
+
+Edit the file config/environment.rb and add line 
+require File.join(File.dirname(__FILE__), '../vendor/plugins/engines/boot')
+
+on the line directly below 
+require File.join(File.dirname(__FILE__), 'boot')
+
+Now we install the netdb_manager plugin itself
+git clone git://github.com/pikelly/netdb_manager.git netdb_manager
+
+Now run script/generate plugin_migration netb_manager
+
+and then rake :db:migrate
+
+This implementation used the memcache service so firstly we install the software
+
+yum install memcached
+
+and then use this facility within rails by
+
+adding the line
+config.cache_store = :mem_cache_store
+
+to the initializer block in config/environment.rb and then editing config/initializers/session_store.rb
+and setting the store type to :mem_cache_store
 
 Example
 =======
@@ -10,4 +42,4 @@ Example
 Example goes here.
 
 
-Copyright (c) 2010 [name of plugin creator], released under the MIT license
+Copyright (c) 2010 [Paul Kelly], released under the MIT license

@@ -5,7 +5,7 @@
 # The second level class is vendor specific Currently we support Microsoft Servers
 # via a web based gateway to the netsh.exe program and the InfoBlox DHCP server, which 
 # is accessed directly
-# The DHCP entries are cached in a Memcache store and are share among all users of the
+# The DHCP entries are cached in a Memcache store and are shared among all users of the
 # system
 module DHCP
   # There has been a problem with the gateway transport or the data

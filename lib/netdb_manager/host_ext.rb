@@ -21,23 +21,13 @@ module NetdbManager
   
       base.extend  ClassMethods
       base.send :include, InstanceMethods
-      base.send :after_save, :transactional_update
+      base.class_eval do
+        after_save :transactional_update
+      end
       true
     end
   
     module InstanceMethods
-      #after_save :transactional_update
-      def save_network_data
-        return true if RAILS_ENV == "test"
-        if @dhcp
-          dhcpServer = @dhcp.serverFor subnet.number
-          if new_record?
-            setDHCP dhcpServer
-          end
-        else
-          true # No netdb management unless we use memcache
-        end
-      end
       def delDHCP dhcpServer
         status = log_status("Delete a DHCP reservation for #{name}/#{ip}", dhcpServer){
           dhcpServer.delReservation self
@@ -76,21 +66,6 @@ module NetdbManager
         end
       end
   
-      def initialise_network_cache
-        return true unless @user
-        return true if SETTINGS[:unattended] and SETTINGS[:unattended] == false
-  
-        @dhcp = Rails.cache.fetch(:dhcp, :expires_in => NET_TTL){
-          DHCP::Dhcp.new(session)
-        }.dup # For some reason the object is frozen in this implementation of the cache!
-        raise RuntimeException, "Unable to create DHCP memcache storage" unless @dhcp
-  
-        # The DHCP instance needs access to the session as some of its DHCPServer implementations need to know about the user
-        per_user_dhcp_data = session[:dhcp_data] ||= {:user => @user.login} 
-        @dhcp.personalise(per_user_dhcp_data)
-        true
-      end
-  
       def transactional_update
         puts "performing transactional update"
         Rails.logger.debug "performing transactional update"
@@ -107,10 +82,6 @@ module NetdbManager
     end
   
     module ClassMethods
-      def reload_network_data
-        Rails.cache.clear
-        head :created
-      end
     end
   end
 end

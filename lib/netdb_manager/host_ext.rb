@@ -3,8 +3,8 @@ module NetdbManager
     def self.included(base)
       # This implementation requires memcache
       if [Rails.configuration.cache_store].flatten[0] == :mem_cache_store
-        require_dependency 'dhcp'
-        require_dependency 'iscdhcp'
+        require_dependency 'implementation/lib/dhcp'
+        #require_dependency 'iscdhcp'
         require_dependency 'ipaddr'
         include DHCP
       else
@@ -18,16 +18,26 @@ module NetdbManager
         puts message
         exit
       end
-  
+
       base.extend  ClassMethods
       base.send :include, InstanceMethods
       base.class_eval do
-        after_save :transactional_update
+        before_validation :load_netdb_caches
+        after_validation  :check_dns
+        after_save        :transactional_update, :save_netdb_caches
       end
       true
     end
-  
+
     module InstanceMethods
+      def check_dns
+        
+      end
+
+      def save_netdb_caches
+        
+      end
+
       def delDHCP dhcpServer
         status = log_status("Delete a DHCP reservation for #{name}/#{ip}", dhcpServer){
           dhcpServer.delReservation self
@@ -70,7 +80,6 @@ module NetdbManager
         puts "performing transactional update"
         Rails.logger.debug "performing transactional update"
         begin
-          initialise_network_cache
           save_network_data
           true
         rescue

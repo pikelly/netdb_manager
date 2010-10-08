@@ -9,9 +9,12 @@ module NetdbManager
     
     module InstanceMethods
       def process_with_netdb_support *args
+        require_dependency 'implementation/lib/dhcp'
         require_dependency 'netdb_manager/host_ext'
         require_dependency 'netdb_manager/user_ext'
+        require_dependency 'netdb_manager/subnet_ext'
         require_dependency 'netdb_manager/application_controller_ext'
+        require_dependency 'netdb_manager/hosts_controller_ext'
         process_without_netdb_support *args
       end
     end

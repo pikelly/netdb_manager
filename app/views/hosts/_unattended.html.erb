@@ -5,6 +5,7 @@
         <td>Domain</td>
         <td><%= f.collection_select :domain_id, Domain.all, :id, :to_label %></td>
         <td>Subnet</td>
+        <% if sn = Subnet.first.dhcp; DHCP.cache_server @dhcp_servers, @dhcp, @user_data, dhcp; end -%>
         <td><%= f.collection_select :subnet_id, Subnet.all, :id, :to_label %></td>
         <td>IP</td>
         <td><%= f.text_field :ip, :size => 16 %></td>
@@ -48,6 +49,9 @@
   <% end -%>
 
 <% end -%>
+<%= observe_field(:host_subnet_id,
+                  :url => { :action => :subnet_selected, :id => @host.id },
+                  :with => :subnet_id)%>
 
 <%= observe_field(:host_architecture_id,
                   :url => { :action => :architecture_selected, :id => @host.id },

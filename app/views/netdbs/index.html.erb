@@ -1,0 +1,26 @@
+<% title "Network databases" %>
+
+<table class="list">
+  <tr>
+    <th>Name</th>
+    <th>Address</th>
+    <th>Vendor</th>
+    <th>Service</th>
+    <th></th>
+  </tr>
+  <% for netdb in @netdbs %>
+    <tr class="<%= cycle("even", "odd") -%>">
+      <td><%=link_to h(netdb.name), edit_netdb_path(netdb)%></td>
+      <td><%=netdb.address%></td>
+      <td><%=netdb.vendor.name%></td>
+      <td><%=netdb.servertype.name%></td>
+      <td align="right">
+        <%= link_to "Destroy", netdb, :confirm => "Delete #{netdb.name}?", :method => :delete %>
+      </td>
+    </tr>
+  <% end %>
+</table>
+<%= page_entries_info @netdbs %>
+<%= will_paginate     @netdbs %>
+
+<p><%= link_to "New network database", new_netdb_path %></p>

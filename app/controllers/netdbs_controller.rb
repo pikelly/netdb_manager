@@ -1,16 +1,41 @@
 class NetdbsController < ApplicationController
-  layout 'standard'
+  def index
+    @search = Netdb.search params[:search]
+    @netdbs = @search.paginate(:page => params[:page])
+  end
 
-  active_scaffold :netdb do |config|
-    config.label = "Network Database"
-    config.actions = [:list,:delete, :search, :create, :show, :update]
-    config.columns = [:name, :address, :vendor, :servertype]
-    columns[:servertype].label = "Service"
-    list.sorting = {:name => 'ASC' }
-    config.columns[:vendor].form_ui  = :select
-    config.columns[:servertype].form_ui  = :select
+  def new
+    @netdb = Netdb.new
+  end
 
-    # Deletes require a page update so as to show error messsages
-    config.delete.link.inline = false
+  def create
+    @netdb = Netdb.new(params[:netdb])
+    if @netdb.save
+      flash[:foreman_notice] = "Successfully created network database"
+      redirect_to netdbs_url
+    else
+      render :action => 'new'
+    end
+  end
+
+  def edit
+    @netdb = Netdb.find(params[:id])
+  end
+
+  def update
+    @netdb = Netdb.find(params[:id])
+    if @netdb.update_attributes(params[:netdb])
+      flash[:foreman_notice] = "Successfully updated network database"
+      redirect_to netdbs_url
+    else
+      render :action => 'edit'
+    end
+  end
+
+  def destroy
+    @netdb = Netdb.find(params[:id])
+    @netdb.destroy
+    flash[:foreman_notice] = "Successfully destroyed network database"
+    redirect_to netdbs_url
   end
 end

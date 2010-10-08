@@ -1,0 +1,20 @@
+<% form_for @netdb do |f| %>
+  <%= f.error_messages %>
+  <p>
+  <%= f.label :name %><br />
+  <%= f.text_field :name %>
+  </p>
+  <p>
+  <%= f.label :address %><br />
+  <%= f.text_field :address %>
+  </p>
+  <p>
+  <%= f.label :vendor %><br />
+  <%= f.collection_select :vendor_id, Vendor.all, :id, :name %>
+  </p>
+  <p>
+  <%= f.label :servertype %><br />
+  <%= f.collection_select :servertype_id, Servertype.all, :id, :name %>
+  </p>
+  <p><%= f.submit "Submit" %></p>
+<% end %>

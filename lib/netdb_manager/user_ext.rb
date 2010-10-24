@@ -24,9 +24,9 @@ module NetdbManager
       end
   
       def capture_user_data user
-        if @user_cache
-          @user_cache[user.login] = {:password => user.password, :rejected => {}}
-          Rails.cache.write "user_cache", @user_cache, :expires_in => NET_TTL
+        if @user_data
+          @user_data[user.login] = {:password => user.password, :rejected => {}}
+          Rails.cache.write "user_cache", @user_data, :expires_in => NET_TTL
         end
         true
       end

@@ -7,7 +7,7 @@
     <th>Number</th>
     <th>Mask</th>
     <th>Ranges</th>
-    <th>Priority</th>
+    <th>DHCP server</th>
     <th>VLAN id</th>
     <th></th>
   </tr>
@@ -18,7 +18,7 @@
       <td><%=subnet.number%></td>
       <td><%=subnet.mask%></td>
       <td><%=subnet.ranges%></td>
-      <td><%=subnet.priority%></td>
+      <td><%=subnet.dhcp.try :name%></td>
       <td><%=subnet.vlanid%></td>
       <td align="right">
         <%= link_to "Destroy", subnet, :confirm => "Delete #{subnet.name}?", :method => :delete %>

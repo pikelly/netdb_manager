@@ -94,6 +94,7 @@ module ApplicationHelper
      ['Host Groups',         hostgroups_url],
      ['Installation Medias', medias_url],
      ['LDAP Authentication', auth_source_ldaps_url],
+     ['Networtk database',   netdbs_url],
      ['Operating Systems',   operatingsystems_url],
      ['Partition Tables',    ptables_url],
      ['Puppet Classes',      puppetclasses_url],

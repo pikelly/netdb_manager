@@ -17,6 +17,7 @@ module ProxyAPI
   class Resource
     attr_reader :url, :user, :password
     include Util
+    attr_accessor :error
 
     def initialize(args)
       @user     = args[:user]     || "admin"
@@ -43,28 +44,41 @@ module ProxyAPI
       self.class.to_s.gsub(/.*::/,"")
     end
 
-    def parse response
-      if response == "null" or response.empty?
-        []
+    def parse reply
+      if reply[0].code == "200"
+        if reply[1].size > 2
+          JSON.parse(reply[1])
+        else
+          true
+        end
       else
-        JSON.parse(response)
+        @error = reply[1]
+        false
       end
     end
 
     def _get_ path
-      @resource[URI.escape(path)].get.body
+      @resource[URI.escape(path)].get{|response, request, result| [result, response] }
+    rescue Exception => e
+      [ OpenStruct.new(:code => "500"), e.message]
     end
 
     def _post_ payload, path
-      @resource[path].post payload
+      @resource[path].post(payload){|response, request, result| [result, response] }
+    rescue Exception => e
+      [ OpenStruct.new(:code => "500"), e.message]
     end
 
     def _put_ payload, path
-      @resource[path].put payload
+      @resource[path].put(payload){|response, request, result| [result, response] }
+    rescue Exception => e
+      [ OpenStruct.new(:code => "500"), e.message]
     end
 
     def _delete_ path
-      @resource[path].delete
+      @resource[path].delete{|response, request, result| [result, response] }
+    rescue Exception => e
+      [ OpenStruct.new(:code => "500"), e.message]
     end
 
     def hash_name
@@ -107,8 +121,8 @@ module ProxyAPI
       super args
     end
     
-    def set key, args
-      parse(_post_(args.merge(:fqdn => key), ""))
+    def set fqdn, args
+      parse(_post_(args.merge(:fqdn => fqdn), ""))
     end
     
     def delete key

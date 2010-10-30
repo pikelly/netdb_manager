@@ -2,6 +2,7 @@ class Netdb < ActiveRecord::Base
   belongs_to :vendor
   belongs_to :servertype
   has_many   :subnets, :foreign_key => "dhcp_id"
+  has_one    :domain,  :foreign_key => "dns_id"
 
   validates_uniqueness_of :name
   validates_presence_of   :vendor_id, :servertype_id

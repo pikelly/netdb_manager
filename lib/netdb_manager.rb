@@ -1,5 +1,5 @@
 # Patch the ActionController with a alias_method_chain that loads our modifications to the models
-require 'netdb_manager/action_controller_ext'
+require_dependency 'netdb_manager/action_controller_ext'
 
 ActionController::Base.prepend_view_path(File.join(File.dirname(__FILE__), '..', 'app', 'views')) 
 

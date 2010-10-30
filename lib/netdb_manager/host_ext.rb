@@ -20,9 +20,10 @@ module NetdbManager
       base.extend  ClassMethods
       base.send :include, InstanceMethods
       base.class_eval do
-        before_save   :initialize_proxies, :check_netdbs
+        attr_accessor :dns, :dhcp
+        before_create :initialize_proxies, :check_netdbs
         after_create  :create_netdbs
-        after_update  :update_netdbs
+        after_update  :initialize_proxies, :update_netdbs
         after_destroy :initialize_proxies, :destroy_netdbs
       end
       true
@@ -33,7 +34,6 @@ module NetdbManager
       # Returns: Boolean true if no entries exists
       def check_netdbs
         continue = true
-        @resolver = Resolv::DNS.new :search => domain.name, :nameserver => domain.dns.address
         if (address = @resolver.getaddress(name) rescue false)
           errors.add_to_base "#{name} is already in DNS with an address of #{address}"
           continue = false
@@ -42,8 +42,8 @@ module NetdbManager
           errors.add_to_base "#{ip} is already in the DNS with a name of #{hostname}"
           continue = false
         end
-        if (entry = dhcp.get subnet.number, mac) and @dhcp.error.empty?
-          errors.add_to_base "#{subnet}/#{mac} is already managed by DHCP and configures #{entry[:title]}"
+        if (entry = @dhcp.get subnet.number, mac) and @dhcp.error.empty?
+          errors.add_to_base "#{subnet}/#{mac} is already managed by DHCP and configures #{entry["title"]}"
           continue = false
         end
         continue
@@ -132,61 +132,86 @@ module NetdbManager
 
       def initialize_proxies
         proxy_address = "http://#{subnet.dhcp.address}:4567"
-        @dhcp = ProxyAPI::DHCP.new(:url => proxy_address)
-        @dns  = ProxyAPI::DNS.new(:url => proxy_address)
+        @dhcp     = ProxyAPI::DHCP.new(:url => proxy_address)
+        @dns      = ProxyAPI::DNS.new(:url => proxy_address)
+        @resolver = Resolv::DNS.new :search => domain.name, :nameserver => domain.dns.address
       end
 
       def destroy_netdbs
         return true if RAILS_ENV == "test"
 
-        initialize_proxies
         # We do not care about entries not being present when we delete them but comms errors, etc, must be reported
-        begin
-          if delDHCP
-            unless delDNS
-              if @dns.error !~ /Record/
-                # Rollback the DHCP operation, if you can :-)
-                setDHCP
-                raise RuntimeError, @dns.error
-              end
-            end
-          else
-            if @dhcp.error !~ /Record/
-              raise RuntimeError, @dhcp.error
+        if delDHCP or @dhcp.error =~ /Record/
+          unless delDNS
+            if @dns.error !~ /DNS delete failed/
+              # Rollback the DHCP operation, if you can :-)
+              setDHCP
+              raise  @dns.error
             end
           end
-        rescue  => e
-          errors.add_to_base "Failed to delete the network database entries: " + e.message
-          raise ActiveRecord::Rollback
-          false
+        else
+          raise  @dhcp.error
         end
+        true
+      rescue  => e
+        errors.add_to_base "Failed to delete the network database entries: " + e.message
+        raise ActiveRecord::Rollback
+        false
       end
 
       def create_netdbs
         return true if RAILS_ENV == "test"
 
-        initialize_proxies
-        Rails.logger.debug "Performing transactional update"
-        begin
-          # We have just tested the validity of the DNS operation in check_netdbs, so if the operation fails it is not due to a conflict
-          # Therefore the operation failed because the write failed and therefore we do not need to rollback the DNS operation
-          if setDNS
-            unless setDHCP
-              raise RuntimeError, @dhcp.error
-            end
-          else
-            raise RuntimeError, @dns.error
+        # We have just tested the validity of the DNS operation in check_netdbs, so if the operation fails it is not due to a conflict
+        # Therefore the operation failed because the write failed and therefore we do not need to rollback the DNS operation
+        if setDNS
+          unless setDHCP
+            raise  @dhcp.error
           end
-          true
-        rescue => e
-          errors.add_to_base "Failed to create the network database entries: " + e.message
-          raise ActiveRecord::Rollback
-          false
+        else
+          raise  @dns.error
         end
+        true
+      rescue => e
+        errors.add_to_base "Failed to create the network database entries: " + e.message
+        raise ActiveRecord::Rollback
+        false
       end
 
       def update_netdbs
-        
+        old = clone
+        for key in (changed_attributes.keys - ["updated_at"])
+          old.send "#{key}=", changed_attributes[key]
+        end
+        new = self
+
+        #DHCP
+        if old.subnet.dhcp.address != new.subnet.dhcp.address
+          # we must create new proxy objects to talk to the old server
+          old.initialize_proxies
+          # We have changed server so delete on the old and recreate on the new
+          raise  @dhcp.error unless old.delDHCP
+          raise  @dhcp.error unless new.setDHCP
+        else
+          # We can reuse the proxy objects from the new host object
+          old.dhcp, old.dns = new.dhcp, new.dns
+          if changed_attributes.keys.grep /ip|mac|name|puppetmaster/
+          raise  @dhcp.error unless old.delDHCP
+          raise  @dhcp.error unless new.setDHCP
+          end
+        end
+
+        # DNS
+        # If the name or IP of the host have changed then remove entries and then create new ones
+        if changed_attributes["ip"] or changed_attributes["name"]
+          raise  @dns.error unless old.delDNS
+          raise  @dns.error unless new.setDNS
+        end
+        true
+      rescue => e
+        errors.add_to_base "Failed to update the network database entries: " + e.message
+        raise ActiveRecord::Rollback
+        false
       end
 
       def sp_valid?

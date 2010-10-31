@@ -7,6 +7,7 @@ class CreateVendors < ActiveRecord::Migration
     end
     Vendor.create :name => "Microsoft"
     Vendor.create :name => "ISC"
+    Vendor.create :name => "Generic"
   end
 
   def self.down

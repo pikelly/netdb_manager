@@ -22,7 +22,7 @@ module NetdbManager
       base.class_eval do
         attr_accessor :dns, :dhcp
         before_create :initialize_proxies, :check_netdbs
-        after_create  :create_netdbs
+        after_create  :create_netdbs, :initialize_tftp
         after_update  :initialize_proxies, :update_netdbs
         after_destroy :initialize_proxies, :destroy_netdbs
       end
@@ -30,6 +30,10 @@ module NetdbManager
     end
 
     module InstanceMethods
+      # Ensure that the tftp bootfiles are available on the proxy host
+      def initialize_tftp
+        
+      end
       # Checks whether DNS or DHCP entries already exist
       # Returns: Boolean true if no entries exists
       def check_netdbs

@@ -7,6 +7,7 @@ class CreateServertypes < ActiveRecord::Migration
     end
     Servertype.create :name => "DHCP"
     Servertype.create :name => "DNS"
+    Servertype.create :name => "TFTP"
   end
 
   def self.down

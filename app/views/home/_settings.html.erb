@@ -21,7 +21,7 @@
                    ['Usergroups',          usergroups_url]
               ] if  SETTINGS[:login]
 %>
-<%= select :controller, :id, choices, {:selected => @controller.request.url}, {:id => "settings_dropdown"}%>
+<%= select :obj, :name, choices, {:selected => @controller.request.url} , {:id => "settings_dropdown"}%>
 
 <%= observe_field('settings_dropdown', :function => "window.location.href = value;") %>
 </span>

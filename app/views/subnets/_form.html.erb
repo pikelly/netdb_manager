@@ -22,7 +22,7 @@
   </p>
   <p>
   <%= f.label :dhcp_id %><br />
-  <%= f.collection_select :dhcp_id, Netdb.servertype_name_is("DHCP"), :id, :name %>
+  <%= f.collection_select :dhcp_id, Netsvc.servertype_name_is("DHCP"), :id, :name %>
   </p>
   <p>
   <%= f.label :vlanid %><br />

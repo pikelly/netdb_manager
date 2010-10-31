@@ -1,4 +1,4 @@
-module NetdbManager
+module NetsvcManager
   module HostExtensions
     def self.included(base)
       # This implementation requires memcache
@@ -21,10 +21,10 @@ module NetdbManager
       base.send :include, InstanceMethods
       base.class_eval do
         attr_accessor :dns, :dhcp
-        before_create :initialize_proxies, :check_netdbs
-        after_create  :create_netdbs, :initialize_tftp
-        after_update  :initialize_proxies, :update_netdbs
-        after_destroy :initialize_proxies, :destroy_netdbs
+        before_create :initialize_proxies, :check_netsvcs
+        after_create  :create_netsvcs, :initialize_tftp
+        after_update  :initialize_proxies, :update_netsvcs
+        after_destroy :initialize_proxies, :destroy_netsvcs
       end
       true
     end
@@ -36,7 +36,7 @@ module NetdbManager
       end
       # Checks whether DNS or DHCP entries already exist
       # Returns: Boolean true if no entries exists
-      def check_netdbs
+      def check_netsvcs
         continue = true
         if (address = @resolver.getaddress(name) rescue false)
           errors.add_to_base "#{name} is already in DNS with an address of #{address}"
@@ -141,7 +141,7 @@ module NetdbManager
         @resolver = Resolv::DNS.new :search => domain.name, :nameserver => domain.dns.address
       end
 
-      def destroy_netdbs
+      def destroy_netsvcs
         return true if RAILS_ENV == "test"
 
         # We do not care about entries not being present when we delete them but comms errors, etc, must be reported
@@ -163,10 +163,10 @@ module NetdbManager
         false
       end
 
-      def create_netdbs
+      def create_netsvcs
         return true if RAILS_ENV == "test"
 
-        # We have just tested the validity of the DNS operation in check_netdbs, so if the operation fails it is not due to a conflict
+        # We have just tested the validity of the DNS operation in check_netsvcs, so if the operation fails it is not due to a conflict
         # Therefore the operation failed because the write failed and therefore we do not need to rollback the DNS operation
         if setDNS
           unless setDHCP
@@ -182,7 +182,7 @@ module NetdbManager
         false
       end
 
-      def update_netdbs
+      def update_netsvcs
         old = clone
         for key in (changed_attributes.keys - ["updated_at"])
           old.send "#{key}=", changed_attributes[key]
@@ -232,4 +232,4 @@ module NetdbManager
   end
 end
 
-Host.send :include, NetdbManager::HostExtensions
+Host.send :include, NetsvcManager::HostExtensions

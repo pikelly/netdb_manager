@@ -2,7 +2,7 @@ class Subnet < ActiveRecord::Base
   has_many :hosts
   has_many :sps, :class_name => 'Host', :foreign_key => 'sp_subnet_id'
   belongs_to :domain
-  belongs_to :dhcp, :class_name => 'Netdb'
+  belongs_to :dhcp, :class_name => 'Netsvc'
 
   validates_presence_of   :number, :mask, :domain, :name
   validates_uniqueness_of :number

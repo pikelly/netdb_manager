@@ -1,10 +1,10 @@
-module NetdbManager
+module NetsvcManager
   module SubnetExtensions
     def self.included(base) #:nodoc:
       base.extend  ClassMethods
       base.send :include, InstanceMethods
       base.class_eval do
-        belongs_to :dhcp, :class_name => 'Netdb'
+        belongs_to :dhcp, :class_name => 'Netsvc'
         validate_on_create :must_be_unique_per_site
 
       end
@@ -27,4 +27,4 @@ module NetdbManager
     end
   end
 end
-Subnet.send :include, NetdbManager::SubnetExtensions
+Subnet.send :include, NetsvcManager::SubnetExtensions

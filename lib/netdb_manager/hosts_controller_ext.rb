@@ -1,4 +1,4 @@
-module NetdbManager
+module NetsvcManager
   module HostsControllerExtensions
     def self.included(base) #:nodoc:
       base.send :include, InstanceMethods
@@ -11,4 +11,4 @@ module NetdbManager
     end
   end
 end
-HostsController.send :include, NetdbManager::HostsControllerExtensions
+HostsController.send :include, NetsvcManager::HostsControllerExtensions

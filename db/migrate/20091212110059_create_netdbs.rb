@@ -1,6 +1,6 @@
-class CreateNetdbs < ActiveRecord::Migration
+class CreateNetsvcs < ActiveRecord::Migration
   def self.up
-    create_table :netdbs do |t|
+    create_table :netsvcs do |t|
       t.string  :name,            :limit => 32, :null => false
       t.string  :address,         :limit => 32, :null => false
       t.integer :servertype_id,                 :null => false
@@ -29,7 +29,7 @@ class CreateNetdbs < ActiveRecord::Migration
   end
 
   def self.down
-    drop_table    :netdbs
+    drop_table    :netsvcs
     remove_column :subnets, :dhcp_id
   end
 end

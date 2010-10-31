@@ -1,4 +1,4 @@
-class Netdb < ActiveRecord::Base
+class Netsvc < ActiveRecord::Base
   belongs_to :vendor
   belongs_to :servertype
   has_many   :subnets, :foreign_key => "dhcp_id"

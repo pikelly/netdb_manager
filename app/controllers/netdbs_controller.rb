@@ -1,41 +1,41 @@
-class NetdbsController < ApplicationController
+class NetsvcsController < ApplicationController
   def index
-    @search = Netdb.search params[:search]
-    @netdbs = @search.paginate(:page => params[:page])
+    @search = Netsvc.search params[:search]
+    @netsvcs = @search.paginate(:page => params[:page])
   end
 
   def new
-    @netdb = Netdb.new
+    @netsvc = Netsvc.new
   end
 
   def create
-    @netdb = Netdb.new(params[:netdb])
-    if @netdb.save
+    @netsvc = Netsvc.new(params[:netsvc])
+    if @netsvc.save
       flash[:foreman_notice] = "Successfully created network database"
-      redirect_to netdbs_url
+      redirect_to netsvcs_url
     else
       render :action => 'new'
     end
   end
 
   def edit
-    @netdb = Netdb.find(params[:id])
+    @netsvc = Netsvc.find(params[:id])
   end
 
   def update
-    @netdb = Netdb.find(params[:id])
-    if @netdb.update_attributes(params[:netdb])
+    @netsvc = Netsvc.find(params[:id])
+    if @netsvc.update_attributes(params[:netsvc])
       flash[:foreman_notice] = "Successfully updated network database"
-      redirect_to netdbs_url
+      redirect_to netsvcs_url
     else
       render :action => 'edit'
     end
   end
 
   def destroy
-    @netdb = Netdb.find(params[:id])
-    @netdb.destroy
+    @netsvc = Netsvc.find(params[:id])
+    @netsvc.destroy
     flash[:foreman_notice] = "Successfully destroyed network database"
-    redirect_to netdbs_url
+    redirect_to netsvcs_url
   end
 end

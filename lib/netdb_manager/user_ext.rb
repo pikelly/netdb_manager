@@ -1,4 +1,4 @@
-module NetdbManager
+module NetsvcManager
   module UserExtensions
     NET_TTL = 7200
     def self.included(base) #:nodoc:
@@ -6,7 +6,7 @@ module NetdbManager
       base.send :include, InstanceMethods
       base.class_eval do
         class << self
-          alias_method_chain :try_to_login, :netdb_support
+          alias_method_chain :try_to_login, :netsvc_support
         end
       end
     end
@@ -16,8 +16,8 @@ module NetdbManager
     
     module ClassMethods
       
-      def try_to_login_with_netdb_support(login, password)
-        if user = self.try_to_login_without_netdb_support(login, password)
+      def try_to_login_with_netsvc_support(login, password)
+        if user = self.try_to_login_without_netsvc_support(login, password)
           User.capture_user_data user
         end
         user
@@ -33,4 +33,4 @@ module NetdbManager
     end
   end
 end
-User.send :include, NetdbManager::UserExtensions
+User.send :include, NetsvcManager::UserExtensions

@@ -1,5 +1,5 @@
 class Vendor < ActiveRecord::Base
-  has_many :netdbs
+  has_many :netsvcs
 
   validates_uniqueness_of :name
   validates_presence_of :name

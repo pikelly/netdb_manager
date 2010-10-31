@@ -1,2 +1,2 @@
-module NetdbsHelper
+module NetsvcsHelper
 end

@@ -1,4 +1,4 @@
-<% title "Network databases" %>
+<% title "Network services" %>
 
 <table class="list">
   <tr>
@@ -8,19 +8,19 @@
     <th>Service</th>
     <th></th>
   </tr>
-  <% for netdb in @netdbs %>
+  <% for netsvc in @netsvcs %>
     <tr class="<%= cycle("even", "odd") -%>">
-      <td><%=link_to h(netdb.name), edit_netdb_path(netdb)%></td>
-      <td><%=netdb.address%></td>
-      <td><%=netdb.vendor.name%></td>
-      <td><%=netdb.servertype.name%></td>
+      <td><%=link_to h(netsvc.name), edit_netsvc_path(netsvc)%></td>
+      <td><%=netsvc.address%></td>
+      <td><%=netsvc.vendor.name%></td>
+      <td><%=netsvc.servertype.name%></td>
       <td align="right">
-        <%= link_to "Destroy", netdb, :confirm => "Delete #{netdb.name}?", :method => :delete %>
+        <%= link_to "Destroy", netsvc, :confirm => "Delete #{netsvc.name}?", :method => :delete %>
       </td>
     </tr>
   <% end %>
 </table>
-<%= page_entries_info @netdbs %>
-<%= will_paginate     @netdbs %>
+<%= page_entries_info @netsvcs %>
+<%= will_paginate     @netsvcs %>
 
-<p><%= link_to "New network database", new_netdb_path %></p>
+<p><%= link_to "New network service", new_netsvc_path %></p>

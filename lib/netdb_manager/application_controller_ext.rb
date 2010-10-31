@@ -1,4 +1,4 @@
-module NetdbManager
+module NetsvcManager
   module ApplicationControllerExtensions
     NET_TTL = 7200
 
@@ -6,19 +6,19 @@ module NetdbManager
       base.send :include, InstanceMethods
       base.class_eval do
         # Setting the filter chain here will not work as it is too late. Set it in each controller individually.
-        #before_filter :load_netdb_caches
+        #before_filter :load_netsvc_caches
       end
       true
     end
 
     module InstanceMethods
-      def load_netdb_caches
+      def load_netsvc_caches
         raise RuntimeError "Unable to determine the user for this operation " unless @user
         return true if SETTINGS[:unattended] and SETTINGS[:unattended] == false
 
         # Fetch the user data mecache. This holds per-user data dependant on the server implementation
-        NetdbManager.user_data = Rails.cache.fetch("user_data", :expires_in => NET_TTL){{}}.dup
-        raise RuntimeError, "Unable to create user data cache storage" unless NetdbManager.user_data
+        NetsvcManager.user_data = Rails.cache.fetch("user_data", :expires_in => NET_TTL){{}}.dup
+        raise RuntimeError, "Unable to create user data cache storage" unless NetsvcManager.user_data
 
         true
       end
@@ -26,4 +26,4 @@ module NetdbManager
     end
   end
 end
-ApplicationController.send :include, NetdbManager::ApplicationControllerExtensions
+ApplicationController.send :include, NetsvcManager::ApplicationControllerExtensions

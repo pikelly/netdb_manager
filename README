@@ -1,4 +1,4 @@
-NetdbManager
+NetsvcManager
 ============
 
 This plugin adds DNS and DHCP management to the foreman application whne running as a rails 2.3.5 application
@@ -17,8 +17,8 @@ require File.join(File.dirname(__FILE__), '../vendor/plugins/engines/boot')
 on the line directly below 
 require File.join(File.dirname(__FILE__), 'boot')
 
-Now we install the netdb_manager plugin itself
-git clone git://github.com/pikelly/netdb_manager.git netdb_manager
+Now we install the netsvc_manager plugin itself
+git clone git://github.com/pikelly/netdb_manager.git netsvc_manager
 
 Now run script/generate plugin_migration netb_manager
 

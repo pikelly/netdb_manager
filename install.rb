@@ -15,7 +15,7 @@ unless `grep subnets #{routes}`
   File.open(routes, "r") do |src|
     File.open(new_routes, "w") do |dst|
       line = src.readline
-      dst.write("map.NetdbManagers") if line.match(/Routes.draw/)
+      dst.write("map.NetsvcManagers") if line.match(/Routes.draw/)
       dst.write line
     end
   end

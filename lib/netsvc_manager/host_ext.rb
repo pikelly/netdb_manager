@@ -21,8 +21,8 @@ module NetsvcManager
       base.send :include, InstanceMethods
       base.class_eval do
         attr_accessor :dns, :dhcp
-        before_create :initialize_proxies, :check_netsvcs
-        after_create  :create_netsvcs, :initialize_tftp
+        before_create :initialize_proxies, :cache_tftp_files, :check_netdbs
+        after_create  :create_netsvcs
         after_update  :initialize_proxies, :update_netsvcs
         after_destroy :initialize_proxies, :destroy_netsvcs
       end
@@ -31,12 +31,20 @@ module NetsvcManager
 
     module InstanceMethods
       # Ensure that the tftp bootfiles are available on the proxy host
-      def initialize_tftp
-        
+      def cache_tftp_files
+        for bootfile_info in operatingsystem.pxe_files(media, architecture)
+          for prefix, path in bootfile_info do
+            return false unless \
+            log_transaction("Download a bootfile from #{path} into #{prefix}", @tftp, true) do |tftp|
+              tftp.fetch_boot_file :prefix => prefix.to_s, :path => path
+            end
+          end
+        end
       end
+
       # Checks whether DNS or DHCP entries already exist
       # Returns: Boolean true if no entries exists
-      def check_netsvcs
+      def check_netdbs
         continue = true
         if (address = @resolver.getaddress(name) rescue false)
           errors.add_to_base "#{name} is already in DNS with an address of #{address}"
@@ -123,8 +131,8 @@ module NetsvcManager
         }
       end
 
-      def log_transaction message, server
-        logger.info "#{message}"
+      def log_transaction message, server, only_log_errors = false
+        logger.info "#{message}" unless only_log_errors
         unless result = yield(server)
           first, rest = message.match(/(\w*)(.*)/)[1,2]
           message = "Failed to " + first.downcase + rest + ": #{server.error}"
@@ -135,9 +143,9 @@ module NetsvcManager
       end
 
       def initialize_proxies
-        proxy_address = "http://#{subnet.dhcp.address}:4567"
-        @dhcp     = ProxyAPI::DHCP.new(:url => proxy_address)
-        @dns      = ProxyAPI::DNS.new(:url => proxy_address)
+        @dhcp     = ProxyAPI::DHCP.new(:url => "http://#{subnet.dhcp.address}:4567")
+        @dns      = ProxyAPI::DNS.new( :url => "http://#{domain.dns.address}:4567")
+        @tftp     = ProxyAPI::TFTP.new(:url => "http://#{domain.tftp.address}:4567")
         @resolver = Resolv::DNS.new :search => domain.name, :nameserver => domain.dns.address
       end
 

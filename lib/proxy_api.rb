@@ -27,6 +27,10 @@ module ProxyAPI
         :headers => { :accept => :json, :content_type => :json }}
     end
 
+    def hostname
+      match = @resource.to_s.match(/:\/\/([^\/:]+)/)
+      match ? match[1] : "hostname in #{@resource}"
+    end
 
     def list
       strip_hash_name(parse(get(path_prefix)))
@@ -68,7 +72,7 @@ module ProxyAPI
     def _get_ path
       @resource[URI.escape(path)].get{|response, request, result| [result, response] }
     rescue Exception => e
-      [ OpenStruct.new(:code => "500"), e.message]
+      [ OpenStruct.new(:code => "500"), e.message =~ /getaddrinfo/ ? "Unable to locate #{hostname}" : e.message]
     end
 
     # Perform POST operation with the supplied payload on the supplied path
@@ -78,7 +82,7 @@ module ProxyAPI
     def _post_ payload, path
       @resource[path].post(payload){|response, request, result| [result, response] }
     rescue Exception => e
-      [ OpenStruct.new(:code => "500"), e.message]
+      [ OpenStruct.new(:code => "500"), e.message =~ /getaddrinfo/ ? "Unable to locate #{hostname}" : e.message]
     end
 
     # Perform PUT operation with the supplied payload on the supplied path
@@ -88,7 +92,7 @@ module ProxyAPI
     def _put_ payload, path
       @resource[path].put(payload){|response, request, result| [result, response] }
     rescue Exception => e
-      [ OpenStruct.new(:code => "500"), e.message]
+      [ OpenStruct.new(:code => "500"), e.message =~ /getaddrinfo/ ? "Unable to locate #{hostname}" : e.message]
     end
 
     # Perform DELETE operation on the supplied path
@@ -98,7 +102,7 @@ module ProxyAPI
     def _delete_ path
       @resource[path].delete{|response, request, result| [result, response] }
     rescue Exception => e
-      [ OpenStruct.new(:code => "500"), e.message]
+      [ OpenStruct.new(:code => "500"), e.message =~ /getaddrinfo/ ? "Unable to locate #{hostname}" : e.message]
     end
 
     def hash_name
@@ -112,8 +116,7 @@ module ProxyAPI
 
   class DHCP < Resource
     def initialize args
-      @url  = args[:url] || raise("Must provide a URL")
-      @url += "/dhcp"
+      @url  = args[:url] + "/dhcp" || raise("Must provide a URL")
       super args
     end
 
@@ -121,7 +124,7 @@ module ProxyAPI
     # Returns: Array of Hashes or false
     # Example [{"network":"192.168.11.0","netmask":"255.255.255.0"},{"network":"192.168.122.0","netmask":"255.255.255.0"}]
     def subnets
-      parse(_get_(".json"))
+      parse(_get_(""))
     end
 
     # Retrieves a DHCP entry
@@ -129,7 +132,7 @@ module ProxyAPI
     # [+mac+]    : String in coloned sexpulet format
     # Returns    : Hash or false
     def get subnet, mac
-      parse(_get_("#{subnet}/#{mac}.json"))
+      parse(_get_("#{subnet}/#{mac}"))
     end
 
     # Sets a DHCP entry
@@ -152,8 +155,7 @@ module ProxyAPI
 
   class DNS < Resource
     def initialize args
-      @url  = args[:url] || raise("Must provide a URL")
-      @url += "/dns"
+      @url  = args[:url] + "/dns" || raise("Must provide a URL")
       super args
     end
     
@@ -170,6 +172,25 @@ module ProxyAPI
     # Returns    : Boolean status
     def delete key
       parse(_delete_("#{key}"))
+    end
+  end
+
+  class TFTP < Resource
+    def initialize args
+      @url  = args[:url] + "/tftp" || raise("Must provide a URL")
+      super args
+    end
+
+    def set mac, args
+      parse(_post_(args, mac))
+    end
+
+    def delete mac
+      parse(_delete_("#{mac}"))
+    end
+
+    def fetch_boot_file args
+      parse(_post_(args, "fetch_boot_file"))
     end
   end
 end

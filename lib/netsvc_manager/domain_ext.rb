@@ -4,7 +4,8 @@ module NetsvcManager
       base.extend  ClassMethods
       base.send :include, InstanceMethods
       base.class_eval do
-        belongs_to :dns, :class_name => 'Netsvc'
+        belongs_to :dns,  :class_name => 'Netsvc'
+        belongs_to :tftp, :class_name => 'Netsvc'
       end
     end
     

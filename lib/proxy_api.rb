@@ -25,6 +25,7 @@ module ProxyAPI
 
       @resource = RestClient::Resource.new url,{ :user => user, :password => password,
         :headers => { :accept => :json, :content_type => :json }}
+      @error = "No proxy error"
     end
 
     def hostname
@@ -129,7 +130,7 @@ module ProxyAPI
 
     # Retrieves a DHCP entry
     # [+subnet+] : String in dotted decimal format
-    # [+mac+]    : String in coloned sexpulet format
+    # [+mac+]    : String in coloned sextuplet format
     # Returns    : Hash or false
     def get subnet, mac
       parse(_get_("#{subnet}/#{mac}"))
@@ -137,7 +138,7 @@ module ProxyAPI
 
     # Sets a DHCP entry
     # [+subnet+] : String in dotted decimal format
-    # [+mac+]    : String in coloned sexpulet format
+    # [+mac+]    : String in coloned sextuplet format
     # [+args+]   : Hash containing DHCP values. The :mac key is taken from the mac parameter
     # Returns    : Boolean status
     def set subnet, mac, args
@@ -146,7 +147,7 @@ module ProxyAPI
 
     # Deletes a DHCP entry
     # [+subnet+] : String in dotted decimal format
-    # [+mac+]    : String in coloned sexpulet format
+    # [+mac+]    : String in coloned sextuplet format
     # Returns    : Boolean status
     def delete subnet, mac
       parse(_delete_("#{subnet}/#{mac}"))
@@ -181,14 +182,27 @@ module ProxyAPI
       super args
     end
 
+    # Creates a TFTP boot entry
+    # [+mac+]  : String in coloned sextuplet format
+    # [+args+] : Hash containing
+    #    :syslinux_config => String containing the configuration
+    # Returns  : Boolean status
     def set mac, args
       parse(_post_(args, mac))
     end
 
+    # Deletes a TFTP boot entry
+    # [+mac+] : String in coloned sextuplet format
+    # Returns : Boolean status
     def delete mac
       parse(_delete_("#{mac}"))
     end
 
+    # Requests that the proxy download the bootfile from the media's source
+    # [+args+] : Hash containing
+    #   :prefix => String containing the location within the TFTP tree to store the file
+    #   :path   => String containing the URL of the file to download
+    # Returns    : Boolean status
     def fetch_boot_file args
       parse(_post_(args, "fetch_boot_file"))
     end

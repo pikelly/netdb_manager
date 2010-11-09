@@ -25,4 +25,4 @@ module NetsvcManager
     end
   end
 end
-ActionController::Base.send :include, NetsvcManager::ActionControllerExtensions
+ActionController::Base.send(:include, NetsvcManager::ActionControllerExtensions) unless Rails.env == "test"
